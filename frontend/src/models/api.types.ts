@@ -26,7 +26,6 @@ export type HttpError = ApiBaseError & {
 
 export type ValidationError = ApiBaseError & {
   type: typeof API_ERROR_TYPES.VALIDATION;
-  details?: Record<string, string>;
 };
 
 export type ServerError = ApiBaseError & {
