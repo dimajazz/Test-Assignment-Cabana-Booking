@@ -1,4 +1,4 @@
-import { MAP_ASSETS } from "@constants/api.constants";
+import { MAP_ASSETS, ACCESSIBILITY } from "@constants/api.constants";
 import { createTileSvg } from "@ui/mapTile/createTileSvg";
 import { createCoordId } from "@features/map/createCoordId";
 import type { TileAsset } from "@models/map.types";
@@ -25,6 +25,12 @@ export function createMapTile(
 
     if (isAvailable) {
       tile.classList.add('available');
+
+      // accessibility for available cabanas
+      tile.setAttribute(ACCESSIBILITY.ROLE, 'button');
+      tile.setAttribute(ACCESSIBILITY.TABINDEX, '0');
+      tile.setAttribute(ACCESSIBILITY.ARIA_LABEL, 'Cabana available');
+      tile.setAttribute(ACCESSIBILITY.TITLE, 'Cabana available');
     }
   }
 

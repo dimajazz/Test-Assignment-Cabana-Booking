@@ -3,7 +3,7 @@ import type { Mock } from 'vitest';
 
 import { createMapTile } from "@ui/mapTile/createMapTile";
 import { createTileSvg } from "@ui/mapTile/createTileSvg";
-import { MAP_ASSETS } from "@constants/api.constants";
+import { MAP_ASSETS, ACCESSIBILITY } from "@constants/api.constants";
 import type { TileAsset } from "@models/map.types";
 
 vi.mock('@ui/mapTile/createTileSvg.ts', () => ({
@@ -102,6 +102,35 @@ describe('createMapTile', () => {
 
         expect(result.classList.contains('available')).toBe(false);
       });
+
+      it('adds accessibility attributes for available cabanas', () => {
+        const tileAsset: TileAsset = { asset: MAP_ASSETS.CABANA, rotation: 0 };
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        vi.mocked(createTileSvg).mockReturnValue(svg);
+
+        const tile = createMapTile(tileAsset, x, y, true);
+
+        expect(tile.getAttribute(ACCESSIBILITY.ROLE)).toBe('button');
+        expect(tile.getAttribute(ACCESSIBILITY.TABINDEX)).toBe('0');
+        expect(tile.getAttribute(ACCESSIBILITY.ARIA_LABEL)).toBe('Cabana available');
+        expect(tile.getAttribute(ACCESSIBILITY.TITLE)).toBe('Cabana available');
+      });
+
+      it('does not add accessibility attributes for reserved cabanas', () => {
+        const tileAsset: TileAsset = { asset: MAP_ASSETS.CABANA, rotation: 0 };
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        vi.mocked(createTileSvg).mockReturnValue(svg);
+
+        const tile = createMapTile(tileAsset, x, y, false);
+
+        expect(tile.hasAttribute(ACCESSIBILITY.ROLE)).toBe(false);
+        expect(tile.hasAttribute(ACCESSIBILITY.TABINDEX)).toBe(false);
+        expect(tile.hasAttribute(ACCESSIBILITY.ARIA_LABEL)).toBe(false);
+        expect(tile.hasAttribute(ACCESSIBILITY.TITLE)).toBe(false);
+      });
+
     });
 
     describe('edge cases', () => {

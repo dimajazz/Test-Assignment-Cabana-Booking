@@ -28,3 +28,11 @@ export const MAP_ASSETS = {
 export const MAP_ERROR_TYPES = {
   ROAD_TOPOLOGY: 'road-topology'
 } as const;
+
+export const ACCESSIBILITY = {
+  ARIA_LABEL: 'aria-label',
+  ARIA_MODAL: 'aria-modal',
+  TITLE: 'title',
+  TABINDEX: 'tabindex',
+  ROLE: 'role'
+} as const;
