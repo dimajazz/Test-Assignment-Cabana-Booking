@@ -67,3 +67,10 @@ export type RoadTopologyError = {
     right: boolean;
   };
 };
+
+export type CabanaMapEvent = {
+  type: 'cabanaUpdated';
+  cabanaId: CabanaId;
+}
+
+export type CabanaListener = (event: CabanaMapEvent) => void;

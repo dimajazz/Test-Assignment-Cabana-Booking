@@ -129,6 +129,18 @@ describe('createBookingForm()', () => {
         }
       })
     });
+
+    it('does not throw when submitHandler is not set and validation fails', () => {
+      const { element } = createBookingForm();
+
+      // onSubmit() hasn't called here!
+
+      const event = new Event('submit', { bubbles: true, cancelable: true });
+
+      expect(() => {
+        element.dispatchEvent(event);
+      }).not.toThrow();
+    });
   });
 
   describe('success behavior', () => {
