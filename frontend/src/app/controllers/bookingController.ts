@@ -4,8 +4,8 @@ import { BOOKING_CONTROLLER_INITIAL_STATE } from "@constants/app.constants";
 
 import { notify } from "@ui/notification/notify";
 import { cabanaStore } from "@app/store/cabanaStore";
-import { removeElement } from "@ui/dom/removeElement";
 import { reserveCabana } from "@api/reserveCabana";
+import { ModalHandler } from "@models/modal.types";
 
 let _state: BookingControllerState = { ...BOOKING_CONTROLLER_INITIAL_STATE };
 
@@ -19,7 +19,12 @@ export const bookingController = {
   },
 
   reset() {
+    const { disableMap, enableMap } = _state;
+
     _state = { ...BOOKING_CONTROLLER_INITIAL_STATE };
+
+    // restore registered callbacks
+    this.registerMapControls(disableMap, enableMap);
   },
 
   registerMapControls(disableMap: DisableFn, enableMap: EnableFn): void {
@@ -27,9 +32,10 @@ export const bookingController = {
     _state.enableMap = enableMap;
   },
 
-  initBooking(cabanaId: CabanaId, modalElement: HTMLElement | null): void {
+  initBooking(cabanaId: CabanaId, modal: ModalHandler): void {
     _state.selectedCabanaId = cabanaId;
-    _state.modalElement = modalElement;
+    _state.modalElement = modal.element;
+    _state.modalClose = modal.close;
   },
 
   async handleFormSubmit(payload: Guest): Promise<void> {
@@ -54,9 +60,9 @@ export const bookingController = {
     _state.disableMap();
 
     if (_state.modalElement) {
-      removeElement(_state.modalElement);
+      _state.modalClose();
     }
-    notify('Sending reservation request...', false);
+    notify('Sending reservation request...', false, 2500);
 
     try {
       const response = await reserveCabana(reservation);

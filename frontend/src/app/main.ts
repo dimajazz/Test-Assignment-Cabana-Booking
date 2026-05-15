@@ -1,4 +1,5 @@
 import { mapPage } from "@ui/pages/mapPage";
+import '@ui/styles/root.css';
 
 function appInit(): void {
   try {

@@ -2,13 +2,21 @@
   "name": "resort-map",
   "version": "1.0.0",
   "description": "Resort Map - Cabana-Booking",
+  "author": "dimajazz",
   "private": true,
   "workspaces": [
     "backend",
     "frontend"
   ],
   "scripts": {
-    "start": "npm run start -w backend & npm run start -w frontend",
-    "test": "npm test -w backend && npm test -w frontend"
+    "start": "run-p start:backend start:frontend",
+    "start:backend": "npm run start -w backend",
+    "start:frontend": "npm run start -w frontend",
+    "bootstrap": "npm install && npm start",
+    "test": "npm test -w backend && npm test -w frontend",
+    "test:coverage": "npm run test:coverage -w backend && npm run test:coverage -w frontend"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
   }
 }

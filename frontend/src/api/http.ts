@@ -19,7 +19,7 @@ export async function http<T>(
   options = options ?? {};
 
   const controller = new AbortController();
-  const timeout = options.timeout ?? 100;
+  const timeout = options.timeout ?? 1000;
 
   const timeoutId = setTimeout(() => {
     controller.abort();
@@ -66,7 +66,7 @@ export async function http<T>(
 
     // ValidationError (400)
     if (
-      response.status === 400
+      (response.status === 400 || response.status === 409)
       && body
       && (typeof body === 'object')
       && ('error' in body)

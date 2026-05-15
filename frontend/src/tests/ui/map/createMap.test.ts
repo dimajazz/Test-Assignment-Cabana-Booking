@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMap } from '@ui/map/createMap';
 import { createMapTile } from '@ui/mapTile/createMapTile';
 import { getAssetForTile } from '@features/map/getAssetForTile';
-
 import { MAP_ASSETS } from '@constants/api.constants';
+
 import type {
   ParsedMap,
   Cabana,
@@ -12,13 +12,18 @@ import type {
   Tile
 } from 'models/map.types';
 
-// Mock dependencies
 vi.mock('@ui/mapTile/createMapTile', () => ({
   createMapTile: vi.fn()
 }));
 
 vi.mock('@features/map/getAssetForTile', () => ({
   getAssetForTile: vi.fn()
+}));
+
+vi.mock('@ui/map/map.module.css', () => ({
+  default: {
+    map: 'map'
+  }
 }));
 
 describe('createMap()', () => {
@@ -49,13 +54,12 @@ describe('createMap()', () => {
 
     it('empty grid returns empty map container', () => {
       const result = createMap(minimalParsedMap());
-
       expect(result.children.length).toBe(0);
     });
 
     it('sets CSS variable --grid-columns-num based on grid row length', () => {
       const grid: Tile[][] = [
-        ['.', '.', '.'], // 3 columns
+        ['.', '.', '.'],
         ['.', '.', '.']
       ];
 
@@ -65,7 +69,6 @@ describe('createMap()', () => {
         roads: new Map()
       };
 
-      // mock createMapTile so we don't care about tile details
       vi.mocked(createMapTile).mockReturnValue(document.createElement('div'));
 
       const result = createMap(mapData);
@@ -73,7 +76,6 @@ describe('createMap()', () => {
       const cssVar = result.style.getPropertyValue('--grid-columns-num').trim();
       expect(cssVar).toBe('3');
     });
-
   });
 
   describe('non-rectangular grid', () => {
@@ -176,10 +178,10 @@ describe('createMap()', () => {
       createMap(mapData);
 
       expect(vi.mocked(createMapTile)).toHaveBeenCalledWith(
-        expect.any(Object),
+        { asset: MAP_ASSETS.CABANA },
         0,
         0,
-        true // isAvailable = !isReserved
+        true
       );
     });
 
@@ -207,7 +209,7 @@ describe('createMap()', () => {
       createMap(mapData);
 
       expect(vi.mocked(createMapTile)).toHaveBeenCalledWith(
-        expect.any(Object),
+        { asset: MAP_ASSETS.CABANA },
         0,
         0,
         false
@@ -219,7 +221,7 @@ describe('createMap()', () => {
 
       const mapData: ParsedMap = {
         grid,
-        cabanas: new Map(), // missing cabana
+        cabanas: new Map(),
         roads: new Map()
       };
 
@@ -275,7 +277,7 @@ describe('createMap()', () => {
       const mapData: ParsedMap = {
         grid,
         cabanas: new Map(),
-        roads: new Map() // missing road tile
+        roads: new Map()
       };
 
       const tileEl = fakeTile('empty');

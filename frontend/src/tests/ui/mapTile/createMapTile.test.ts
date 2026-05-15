@@ -1,33 +1,39 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import type { Mock } from 'vitest';
+import type { Mock } from "vitest";
 
 import { createMapTile } from "@ui/mapTile/createMapTile";
 import { createTileSvg } from "@ui/mapTile/createTileSvg";
 import { MAP_ASSETS, ACCESSIBILITY } from "@constants/api.constants";
 import type { TileAsset } from "@models/map.types";
 
-vi.mock('@ui/mapTile/createTileSvg.ts', () => ({
+vi.mock("@ui/mapTile/createTileSvg", () => ({
   createTileSvg: vi.fn()
+}));
+
+vi.mock("@ui/mapTile/mapTile.module.css", () => ({
+  default: {
+    tile: "tile"
+  }
 }));
 
 const mockedCreateTileSvg = vi.mocked(createTileSvg);
 
-describe('createMapTile', () => {
+describe("createMapTile", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.clearAllMocks();
   });
 
-  describe('wrapper element behavior', () => {
+  describe("wrapper element behavior", () => {
     it('always returns a div with class "tile"', () => {
       const tileAsset: TileAsset = { asset: MAP_ASSETS.POOL };
 
       const result = createMapTile(tileAsset, 0, 0);
 
-      expect(result.tagName).toBe('DIV');
-      expect(result.classList.contains('tile')).toBe(true);
+      expect(result.tagName).toBe("DIV");
+      expect(result.classList.contains("tile")).toBe(true);
     });
 
-    it('returns wrapper without SVG for EMPTY_SPACE', () => {
+    it("returns wrapper without SVG for EMPTY_SPACE", () => {
       const tileAsset: TileAsset = { asset: MAP_ASSETS.EMPTY_SPACE };
 
       mockedCreateTileSvg.mockReturnValue(null);
@@ -38,9 +44,9 @@ describe('createMapTile', () => {
     });
   });
 
-  describe('non-empty tiles', () => {
-    it('inserts SVG returned by createTileSvg', () => {
-      const mockSvg = document.createElementNS('http://www.w3.org/1999/xhtml', 'svg');
+  describe("non-empty tiles", () => {
+    it("inserts SVG returned by createTileSvg", () => {
+      const mockSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 
       (createTileSvg as Mock).mockReturnValue(mockSvg);
 
@@ -51,18 +57,47 @@ describe('createMapTile', () => {
       expect(result.firstChild).toBe(mockSvg);
     });
 
-    it('if createTileSvg returns null, wrapper still returned without children', () => {
+    it("if createTileSvg returns null, wrapper still returned without children", () => {
       mockedCreateTileSvg.mockReturnValue(null);
 
       const tileAsset: TileAsset = { asset: MAP_ASSETS.ROAD_VERTICAL };
 
       const result = createMapTile(tileAsset, 0, 0);
 
-      expect(result.tagName).toBe('DIV');
+      expect(result.tagName).toBe("DIV");
       expect(result.children.length).toBe(0);
     });
 
-    describe('cabana tiles', () => {
+    describe("title attribute behavior", () => {
+      it("sets title for chalet and pool", () => {
+        const chaletTile: TileAsset = { asset: MAP_ASSETS.CHALET };
+        const poolTile: TileAsset = { asset: MAP_ASSETS.POOL };
+
+        const chalet = createMapTile(chaletTile, 0, 0);
+        const pool = createMapTile(poolTile, 0, 0);
+
+        expect(chalet.getAttribute(ACCESSIBILITY.TITLE)).toBe(MAP_ASSETS.CHALET);
+        expect(pool.getAttribute(ACCESSIBILITY.TITLE)).toBe(MAP_ASSETS.POOL);
+      });
+
+      it("sets generic cabana title when reserved (isAvailable=false)", () => {
+        const cabanaTile: TileAsset = { asset: MAP_ASSETS.CABANA };
+
+        const tile = createMapTile(cabanaTile, 1, 1, false);
+
+        expect(tile.getAttribute(ACCESSIBILITY.TITLE)).toBe(MAP_ASSETS.CABANA);
+      });
+
+      it("sets 'Cabana available' title when available (isAvailable=true)", () => {
+        const cabanaTile: TileAsset = { asset: MAP_ASSETS.CABANA };
+
+        const tile = createMapTile(cabanaTile, 1, 1, true);
+
+        expect(tile.getAttribute(ACCESSIBILITY.TITLE)).toBe("Cabana available");
+      });
+    });
+
+    describe("cabana tiles", () => {
       const tileAsset: TileAsset = { asset: MAP_ASSETS.CABANA };
       const x = 3;
       const y = 5;
@@ -73,7 +108,7 @@ describe('createMapTile', () => {
 
         const result = createMapTile(tileAsset, x, y);
 
-        expect(result.dataset.type).toBe('cabana');
+        expect(result.dataset.type).toBe("cabana");
         expect(result.dataset.id).toBe(cabanaId);
       });
 
@@ -82,7 +117,7 @@ describe('createMapTile', () => {
 
         const result = createMapTile(tileAsset, x, y, false);
 
-        expect(result.classList.contains('available')).toBe(false);
+        expect(result.classList.contains("available")).toBe(false);
       });
 
       it('adds "available" class when isAvailable=true by default', () => {
@@ -90,7 +125,7 @@ describe('createMapTile', () => {
 
         const result = createMapTile(tileAsset, x, y);
 
-        expect(result.classList.contains('available')).toBe(true);
+        expect(result.classList.contains("available")).toBe(true);
       });
 
       it('does not add "available" class when TileAsset is not a Cabana', () => {
@@ -100,27 +135,27 @@ describe('createMapTile', () => {
 
         const result = createMapTile(notCabanaAsset, x, y);
 
-        expect(result.classList.contains('available')).toBe(false);
+        expect(result.classList.contains("available")).toBe(false);
       });
 
-      it('adds accessibility attributes for available cabanas', () => {
+      it("adds accessibility attributes for available cabanas", () => {
         const tileAsset: TileAsset = { asset: MAP_ASSETS.CABANA, rotation: 0 };
 
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         vi.mocked(createTileSvg).mockReturnValue(svg);
 
         const tile = createMapTile(tileAsset, x, y, true);
 
-        expect(tile.getAttribute(ACCESSIBILITY.ROLE)).toBe('button');
-        expect(tile.getAttribute(ACCESSIBILITY.TABINDEX)).toBe('0');
-        expect(tile.getAttribute(ACCESSIBILITY.ARIA_LABEL)).toBe('Cabana available');
-        expect(tile.getAttribute(ACCESSIBILITY.TITLE)).toBe('Cabana available');
+        expect(tile.getAttribute(ACCESSIBILITY.ROLE)).toBe("button");
+        expect(tile.getAttribute(ACCESSIBILITY.TABINDEX)).toBe("0");
+        expect(tile.getAttribute(ACCESSIBILITY.ARIA_LABEL)).toBe("Cabana available");
+        expect(tile.getAttribute(ACCESSIBILITY.TITLE)).toBe("Cabana available");
       });
 
-      it('does not add accessibility attributes for reserved cabanas', () => {
+      it("does not add interactive accessibility attributes for reserved cabanas", () => {
         const tileAsset: TileAsset = { asset: MAP_ASSETS.CABANA, rotation: 0 };
 
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         vi.mocked(createTileSvg).mockReturnValue(svg);
 
         const tile = createMapTile(tileAsset, x, y, false);
@@ -128,21 +163,22 @@ describe('createMapTile', () => {
         expect(tile.hasAttribute(ACCESSIBILITY.ROLE)).toBe(false);
         expect(tile.hasAttribute(ACCESSIBILITY.TABINDEX)).toBe(false);
         expect(tile.hasAttribute(ACCESSIBILITY.ARIA_LABEL)).toBe(false);
-        expect(tile.hasAttribute(ACCESSIBILITY.TITLE)).toBe(false);
-      });
 
+        // reserved cabanas keep generic title
+        expect(tile.getAttribute(ACCESSIBILITY.TITLE)).toBe(MAP_ASSETS.CABANA);
+      });
     });
 
-    describe('edge cases', () => {
-      it('x and y are NOT used for DOM positioning', () => {
+    describe("edge cases", () => {
+      it("x and y are NOT used for DOM positioning", () => {
         mockedCreateTileSvg.mockReturnValue(null);
 
         const tileAsset: TileAsset = { asset: MAP_ASSETS.CABANA };
 
         const result = createMapTile(tileAsset, 10, 20);
 
-        expect(result.style.left).toBe('');
-        expect(result.style.top).toBe('');
+        expect(result.style.left).toBe("");
+        expect(result.style.top).toBe("");
       });
     });
   });

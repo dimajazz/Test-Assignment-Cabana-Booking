@@ -7,8 +7,11 @@ import { createMap } from "@ui/map/createMap";
 import { createMapTile } from "@ui/mapTile/createMapTile";
 import { openModal } from "@ui/modal/openModal";
 import { checkIsCabanaId } from "@features/map/checkIsCabanaId";
+import { injectSpriteOnce } from '@ui/sprite/injectSpriteOnce';
+import { notify } from "@ui/notification/notify";
 import { MAP_ASSETS } from "@constants/api.constants";
 import type { CabanaMapEvent } from "@models/map.types";
+import styles from '@ui/pages/mapPage.module.css';
 
 export const mapPage = {
   root: null as HTMLElement | null,
@@ -17,6 +20,8 @@ export const mapPage = {
   async init(root: HTMLElement): Promise<void> {
     this.root = root;
 
+    await injectSpriteOnce('/assets.svg');
+
     const title = document.createElement('h1');
     title.textContent = 'Welcome to the Overlook Hotel';
 
@@ -24,9 +29,13 @@ export const mapPage = {
     description.textContent = 'Reserve a cabana for your booked room';
 
     const container = document.createElement('div');
-    container.className = 'map-container';
+    container.className = styles.mapContainer;
 
-    root.append(title, description, container);
+    const mapPageContainer = document.createElement('div');
+    mapPageContainer.className = styles.mapPageContainer;
+
+    mapPageContainer.append(title, description, container);
+    root.appendChild(mapPageContainer);
 
     const response = await fetchMap();
     const parsedData = parseMap(response);
@@ -35,11 +44,22 @@ export const mapPage = {
     container.appendChild(this.mapElem);
 
     this.mapElem.addEventListener('click', this.onTileClick.bind(this));
+    this.mapElem.addEventListener('keydown', this.onTileKeyDown.bind(this));
 
+    cabanaStore.init(parsedData.cabanas);
     cabanaStore.subscribe(this.onCabanaUpdate.bind(this));
+
+    bookingController.registerMapControls(
+      () => this.setProcessing(true),
+      () => this.setProcessing(false)
+    );
   },
 
   onTileClick(event: Event): void {
+    if (bookingController.isProcessing) {
+      return;
+    }
+
     const target = event.target as HTMLElement;
 
     const tile: HTMLElement | null = target?.closest('[data-id]');
@@ -55,10 +75,40 @@ export const mapPage = {
 
     const cabanaId = tileId;
 
+    const cabana = cabanaStore.getCabanaById(cabanaId);
+    if (!cabana) {
+      notify('Cabana not found!', true);
+    }
+    if (cabana?.isReserved) {
+      return;
+    }
+
     const form = createBookingForm();
     const modal = openModal(form.element);
 
-    bookingController.initBooking(cabanaId, modal.element);
+    form.onSubmit((result) => {
+      if (!result.isOk) {
+        notify(result.error.message, true);
+        return;
+      }
+
+      bookingController.handleFormSubmit(result.payload);
+    });
+
+    bookingController.initBooking(cabanaId, modal);
+  },
+
+  onTileKeyDown(event: KeyboardEvent): void {
+    if (bookingController.isProcessing) {
+      return;
+    }
+
+    // Only act on Enter or Space
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+
+    this.onTileClick(event);
   },
 
   onCabanaUpdate(event: CabanaMapEvent): void {
@@ -95,6 +145,6 @@ export const mapPage = {
       return;
     }
 
-    this.mapElem.classList.toggle('disabled', isProcessing);
+    this.mapElem.classList.toggle(styles.disabled, isProcessing);
   }
 };

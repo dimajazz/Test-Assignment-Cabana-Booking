@@ -5,10 +5,11 @@ import {
   Guest
 } from "@models/reservation.types";
 import { createButton } from "@ui/button/createButton";
+import styles from '@ui/form/form.module.css';
 
 export function createBookingForm(): BookingForm {
   const form = document.createElement('form');
-  form.className = 'booking-form';
+  form.className = styles.bookingForm;
 
   const formTitle = document.createElement('h2');
   formTitle.textContent = 'Reserve a cabana';
@@ -19,6 +20,7 @@ export function createBookingForm(): BookingForm {
   roomInput.name = 'room';
   roomInput.type = 'number';
   roomInput.placeholder = 'Enter the room number (e.g. 237)';
+  roomInput.setAttribute('required', '');
   const roomInputLabel = document.createElement('label');
   roomInputLabel.htmlFor = roomInput.id;
   roomInputLabel.textContent = 'Room number';
@@ -28,6 +30,7 @@ export function createBookingForm(): BookingForm {
   guestNameInput.name = 'guestName';
   guestNameInput.type = 'text';
   guestNameInput.placeholder = 'Enter guest name (e.g. Jack Torrance)';
+  guestNameInput.setAttribute('required', '');
   const guestNameInputLabel = document.createElement('label');
   guestNameInputLabel.htmlFor = guestNameInput.id;
   guestNameInputLabel.textContent = 'Guest name';
@@ -36,7 +39,8 @@ export function createBookingForm(): BookingForm {
     content: 'Reserve cabana',
     ariaLabel: 'Reserve cabana button',
     title: 'Reserve cabana button',
-    type: 'submit'
+    type: 'submit',
+    className: styles.bookingFormButton
   });
 
   form.append(

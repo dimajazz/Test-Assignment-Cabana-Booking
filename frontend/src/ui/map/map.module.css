@@ -1,0 +1,5 @@
+.map {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns-num), minmax(2rem, 1fr));
+  width: 100%;
+}

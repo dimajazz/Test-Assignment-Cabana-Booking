@@ -1,181 +1,175 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { openModal } from "@ui/modal/openModal";
-import { ACCESSIBILITY } from "@constants/api.constants";
+import { openModal } from '@ui/modal/openModal';
+import { ACCESSIBILITY } from '@constants/api.constants';
+import { removeElement } from '@ui/dom/removeElement';
+
+vi.mock('@ui/dom/removeElement', () => ({
+  removeElement: vi.fn((el: HTMLElement) => {
+    el.remove();
+  })
+}));
+
+vi.mock('@ui/button/createButton', () => ({
+  createButton: vi.fn(({ content, ariaLabel, title }) => {
+    const btn = document.createElement('button');
+    btn.innerHTML = content;
+    btn.setAttribute('aria-label', ariaLabel);
+    btn.setAttribute('title', title);
+    return btn;
+  })
+}));
 
 describe('openModal()', () => {
   beforeEach(() => {
-    document.body.innerHTML = '';
+    document.body.innerHTML = `
+      <div id='app-root'></div>
+    `;
+    document.body.style.overflow = '';
+    vi.clearAllMocks();
   });
 
-  it('creates modal-container and appends to body', () => {
+  it('creates modal container and appends to body', () => {
     const content = document.createElement('div');
     const modalHandler = openModal(content);
 
-    const container = modalHandler.element;
-
-    expect(container).toBeInstanceOf(HTMLElement);
-    expect(container.classList.contains('modal-container')).toBe(true);
-    expect(document.body.contains(container)).toBe(true);
+    expect(document.body.contains(modalHandler.element)).toBe(true);
   });
 
-  it('modal contains .modal element with correct attributes', () => {
+  it('modal has correct accessibility attributes', () => {
     const content = document.createElement('div');
     const modalHandler = openModal(content);
 
-    const container = modalHandler.element;
-    const modal = container.querySelector('.modal');
+    const modal = modalHandler.element.querySelector('div > div');
 
-    expect(modal).toBeInstanceOf(HTMLElement);
     expect(modal?.getAttribute(ACCESSIBILITY.ROLE)).toBe('dialog');
     expect(modal?.getAttribute(ACCESSIBILITY.ARIA_MODAL)).toBe('true');
   });
 
-  it('modal contains .modal-head with close button', () => {
+  it('modal contains header with close button', () => {
     const content = document.createElement('div');
     const modalHandler = openModal(content);
 
-    const container = modalHandler.element;
-    const modalHeader = container.querySelector('.modal-header');
-    const closeBtn = modalHeader?.querySelector('button');
+    const modal = modalHandler.element.querySelector('div > div');
+    const header = modal?.firstElementChild;
+    const closeBtn = header?.querySelector('button');
 
-    expect(modalHeader).toBeInstanceOf(HTMLElement);
+    expect(header).toBeInstanceOf(HTMLElement);
     expect(closeBtn).toBeInstanceOf(HTMLButtonElement);
+    expect(closeBtn?.innerHTML).toBe('×');
   });
 
-  it('close button contains correct attributes', () => {
-    const content = document.createElement('div');
-    const modalHandler = openModal(content);
-
-    const container = modalHandler.element;
-    const modalHeader = container.querySelector('.modal-header');
-    const closeBtn = modalHeader?.querySelector('button');
-
-    expect(closeBtn).toBeInstanceOf(HTMLButtonElement);
-    expect(closeBtn?.textContent).toBe('×');
-    expect(closeBtn?.getAttribute(ACCESSIBILITY.ARIA_LABEL)).toBe('Close modal');
-    expect(closeBtn?.getAttribute(ACCESSIBILITY.TITLE)).toBe('Close modal');
-    expect(closeBtn?.getAttribute(ACCESSIBILITY.TABINDEX)).toBe('0');
-  });
-
-  it('modal-body contains provided content element', () => {
+  it('modal body contains provided content', () => {
     const content = document.createElement('p');
-    content.textContent = 'Welcome';
+    content.textContent = 'Hello';
 
     const modalHandler = openModal(content);
-    const container = modalHandler.element;
+    const modal = modalHandler.element.querySelector('div > div');
+    const modalBody = modal?.querySelector('div:last-child');
 
-    const modalBody = container.querySelector('.modal-body');
-
-    expect(modalBody).toBeInstanceOf(HTMLElement);
     expect(modalBody?.contains(content)).toBe(true);
   });
 
-  it('close button removes modal-container from DOM', () => {
+  it('sets body overflow to hidden when opened', () => {
     const content = document.createElement('div');
-    const modalHandler = openModal(content);
-    const modalContainer = modalHandler.element;
+    openModal(content);
 
-    const closeBtn = modalContainer.querySelector('button');
-    closeBtn?.click();
-
-    expect(document.body.contains(modalContainer)).toBe(false);
+    expect(document.body.style.overflow).toBe('hidden');
   });
 
-  it('click outside modal closes modal', () => {
+  it('applies inert to #app-root', () => {
     const content = document.createElement('div');
-    const modalHandler = openModal(content);
-    const modalContainer = modalHandler.element;
+    openModal(content);
 
-    // simulate click on overlay (container)
-    const event = new MouseEvent('click', { bubbles: true });
-    modalContainer.dispatchEvent(event);
-
-    expect(document.body.contains(modalContainer)).toBe(false);
+    const root = document.querySelector('#app-root');
+    expect(root?.hasAttribute('inert')).toBe(true);
   });
 
-  it('click inside modal does NOT close modal', () => {
-    const content = document.createElement('p');
+  it('close button closes modal and restores overflow + inert', () => {
+    const content = document.createElement('div');
     const modalHandler = openModal(content);
+
     const modalContainer = modalHandler.element;
-    const modal = modalContainer.querySelector('.modal');
-    const modalHeader = modal?.querySelector('.modal-header');
-    const modalBody = modal?.querySelector('.modal-body');
-    const modalContent = modalBody?.querySelector('p');
+    const closeBtn = modalContainer.querySelector('button')!;
 
-    const event = new MouseEvent('click', { bubbles: true });
-    modal?.dispatchEvent(event);
-    modalHeader?.dispatchEvent(event);
-    modalBody?.dispatchEvent(event);
-    modalContent?.dispatchEvent(event);
+    closeBtn.click();
 
-    expect(document.body.contains(modalContainer)).toBe(true);
+    expect(removeElement).toHaveBeenCalledWith(modalContainer);
+    expect(document.body.style.overflow).toBe('');
+    expect(document.querySelector('#app-root')?.hasAttribute('inert')).toBe(false);
+  });
+
+  it('clicking outside modal closes it', () => {
+    const content = document.createElement('div');
+    const modalHandler = openModal(content);
+
+    const modalContainer = modalHandler.element;
+
+    modalContainer.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(removeElement).toHaveBeenCalledWith(modalContainer);
+  });
+
+  it('clicking inside modal does NOT close it', () => {
+    const content = document.createElement('div');
+    const modalHandler = openModal(content);
+
+    const modalContainer = modalHandler.element;
+    const modal = modalContainer.querySelector('div > div')!;
+
+    modal.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(removeElement).not.toHaveBeenCalled();
   });
 
   it('Escape key closes modal', () => {
-    const content = document.createElement('p');
-    const modalHandler = openModal(content);
-    const modalContainer = modalHandler.element;
-
-    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
-    document.dispatchEvent(event);
-
-    expect(document.body.contains(modalContainer)).toBe(false);
-  });
-
-  it('Escape key listener removed after close', () => {
     const content = document.createElement('div');
     const modalHandler = openModal(content);
+
     const modalContainer = modalHandler.element;
 
-    // close programmatically
-    modalHandler.close();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 
-    // dispatch Escape again
-    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
-    document.dispatchEvent(event);
-
-    // still closed, no errors
-    expect(document.body.contains(modalContainer)).toBe(false);
+    expect(removeElement).toHaveBeenCalledWith(modalContainer);
   });
 
-  it('programmatic close removes modal-container', () => {
+  it('non-Escape key does NOT close modal', () => {
+    const content = document.createElement('div');
+    openModal(content);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    expect(removeElement).not.toHaveBeenCalled();
+  });
+
+  it('programmatic close removes modal and restores state', () => {
     const content = document.createElement('div');
     const modalHandler = openModal(content);
+
     const modalContainer = modalHandler.element;
 
     modalHandler.close();
 
-    expect(document.body.contains(modalContainer)).toBe(false);
+    expect(removeElement).toHaveBeenCalledWith(modalContainer);
+    expect(document.body.style.overflow).toBe('');
+    expect(document.querySelector('#app-root')?.hasAttribute('inert')).toBe(false);
   });
 
-  it('close() calling twice does nothing', () => {
+  it('calling close() twice does nothing extra', () => {
     const content = document.createElement('div');
     const modalHandler = openModal(content);
-    const modalContainer = modalHandler.element;
 
     modalHandler.close();
     modalHandler.close();
 
-    expect(document.body.contains(modalContainer)).toBe(false);
+    expect(removeElement).toHaveBeenCalledTimes(1);
   });
 
-  it('openModal returns a handle with close() and element', () => {
+  it('returns handler with element + close()', () => {
     const content = document.createElement('div');
     const modalHandler = openModal(content);
 
-    expect(typeof modalHandler.close).toBe('function');
     expect(modalHandler.element).toBeInstanceOf(HTMLElement);
-  });
-
-  it('non-Escape key does not close modal', () => {
-    const content = document.createElement('div');
-    const modalHandler = openModal(content);
-    const modalContainer = modalHandler.element;
-
-    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
-    document.dispatchEvent(event);
-
-    expect(document.body.contains(modalContainer)).toBe(true);
+    expect(typeof modalHandler.close).toBe('function');
   });
 });

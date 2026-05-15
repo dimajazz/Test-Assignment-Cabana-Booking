@@ -1,4 +1,4 @@
-import { CabanaCoordinates, CabanaId } from "@models/map.types";
+import { Cabana, CabanaCoordinates, CabanaId } from "@models/map.types";
 
 export type Guest = {
   room: string;
@@ -12,7 +12,7 @@ export type Reservation = {
 
 export type ReservationResponse = {
   message: string;
-  reservation: Reservation;
+  reservation: Cabana;
 };
 
 export type BookingFormSubmitHandler = (payload: BookingFormSubmitPayload) => void;
@@ -35,11 +35,13 @@ export type FormValidationError = {
 
 export type DisableFn = () => void;
 export type EnableFn = () => void;
+export type ModalCloseFn = () => void;
 
 export type BookingControllerState = {
   isProcessing: boolean;
   modalElement: HTMLElement | null;
   selectedCabanaId: CabanaId | null;
+  modalClose: ModalCloseFn;
   disableMap: DisableFn;
   enableMap: EnableFn;
 };

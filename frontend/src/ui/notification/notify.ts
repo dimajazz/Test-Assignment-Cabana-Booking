@@ -2,6 +2,7 @@ import { getNotificationContainer } from "@ui/notification/getNotificationContai
 import { createButton } from "@ui/button/createButton";
 import { removeElement } from "@ui/dom/removeElement";
 import { ACCESSIBILITY } from "@constants/api.constants";
+import styles from '@ui/notification/notification.module.css';
 
 export function notify(
   message: string,
@@ -10,8 +11,8 @@ export function notify(
 ): HTMLElement {
   const notification = document.createElement('div');
   notification.className = isError
-    ? 'notification notification-error'
-    : 'notification';
+    ? `${styles.notification} ${styles.notificationError}`
+    : styles.notification;
 
   // accessibility
   notification.setAttribute(ACCESSIBILITY.ROLE, isError ? 'alert' : 'status');
@@ -23,7 +24,8 @@ export function notify(
   const closeButton = createButton({
     content: '&times;',
     ariaLabel: 'Close notification',
-    title: 'Close notification'
+    title: 'Close notification',
+    className: 'close-button'
   });
   notification.appendChild(closeButton);
 

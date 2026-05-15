@@ -55,7 +55,7 @@ describe('ReservationService.reserveCabana', () => {
 
     await expect(
       ReservationService.reserveCabana(payload, store)
-    ).rejects.toThrow('The room had already been reserved by the guest');
+    ).rejects.toThrow('A cabana had already been reserved by the guest');
   });
 
   // Cabana does not exist

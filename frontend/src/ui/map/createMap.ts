@@ -3,10 +3,11 @@ import { getAssetForTile } from "@features/map/getAssetForTile";
 import { createCoordId } from "@features/map/createCoordId";
 import { MAP_ASSETS } from "@constants/api.constants";
 import type { ParsedMap, TileAsset } from "@models/map.types";
+import styles from '@ui/map/map.module.css';
 
 export function createMap(mapData: ParsedMap): HTMLElement {
   const map = document.createElement('div');
-  map.className = 'map';
+  map.className = styles.map;
 
   const { grid } = mapData;
 

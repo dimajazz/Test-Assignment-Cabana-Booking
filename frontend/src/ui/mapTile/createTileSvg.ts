@@ -18,6 +18,7 @@ export function createTileSvg(tile: TileAsset): SVGSVGElement | null {
   }
 
   const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   const use = document.createElementNS(SVG_NS, 'use');
 
   use.setAttribute('href', `#${asset}`);

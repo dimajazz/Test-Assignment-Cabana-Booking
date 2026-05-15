@@ -2,6 +2,7 @@ import { MAP_ASSETS, ACCESSIBILITY } from "@constants/api.constants";
 import { createTileSvg } from "@ui/mapTile/createTileSvg";
 import { createCoordId } from "@features/map/createCoordId";
 import type { TileAsset } from "@models/map.types";
+import styles from '@ui/mapTile/mapTile.module.css';
 
 export function createMapTile(
   tileAsset: TileAsset,
@@ -11,12 +12,20 @@ export function createMapTile(
 ): HTMLElement {
 
   const tile = document.createElement('div');
-  tile.className = 'tile';
+  tile.className = styles.tile;
 
   const svg = createTileSvg(tileAsset);
 
   if (svg) {
     tile.appendChild(svg);
+  }
+
+  if (
+    tileAsset.asset === MAP_ASSETS.CHALET
+    || tileAsset.asset === MAP_ASSETS.POOL
+    || tileAsset.asset === MAP_ASSETS.CABANA
+  ) {
+    tile.setAttribute(ACCESSIBILITY.TITLE, tileAsset.asset);
   }
 
   if (tileAsset.asset === MAP_ASSETS.CABANA) {

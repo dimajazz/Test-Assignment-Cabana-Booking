@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { createTileSvg } from '@ui/mapTile/createTileSvg';
 import { MAP_ASSETS } from '@constants/api.constants';
@@ -17,6 +17,7 @@ function createSymbol(id: string) {
 describe('createTileSvg()', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
+    vi.spyOn(console, 'warn').mockImplementation(() => { });
   });
 
   it('returns null for EMPTY_SPACE asset', () => {

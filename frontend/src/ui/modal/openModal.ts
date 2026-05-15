@@ -2,34 +2,41 @@ import { ACCESSIBILITY } from "@constants/api.constants";
 import type { ModalHandler } from "@models/modal.types";
 import { removeElement } from "@ui/dom/removeElement";
 import { createButton } from "@ui/button/createButton";
+import styles from '@ui/modal/modal.module.css';
 
 export function openModal(content: HTMLElement): ModalHandler {
   const modalContainer = document.createElement('div');
-  modalContainer.className = 'modal-container';
+  modalContainer.className = styles.modalContainer;
 
   const modal = document.createElement('div');
-  modal.className = 'modal';
+  modal.className = styles.modal;
   modal.setAttribute(ACCESSIBILITY.ROLE, 'dialog');
   modal.setAttribute(ACCESSIBILITY.ARIA_MODAL, 'true');
   modalContainer.appendChild(modal);
 
   const modalHeader = document.createElement('div');
-  modalHeader.className = 'modal-header';
+  modalHeader.className = styles.modalHeader;
   modal.appendChild(modalHeader);
 
   const closeButton = createButton({
     content: '&times;',
     ariaLabel: 'Close modal',
-    title: 'Close modal'
+    title: 'Close modal',
+    className: 'close-button'
   });
   modalHeader.appendChild(closeButton);
 
   const modalBody = document.createElement('div');
-  modalBody.className = 'modal-body';
+  modalBody.className = styles.modalBody;
   modalBody.appendChild(content);
   modal.appendChild(modalBody);
 
+  const rootElem = document.querySelector('#app-root');
+  rootElem?.setAttribute('inert', '');
+
   document.body.appendChild(modalContainer);
+
+  document.body.style.overflow = 'hidden';
 
   // close logic
   let isModalClosed = false;
@@ -43,6 +50,9 @@ export function openModal(content: HTMLElement): ModalHandler {
 
     modalContainer.removeEventListener('click', onOverlayClick);
     document.removeEventListener('keydown', onEscape);
+
+    document.body.style.overflow = '';
+    rootElem?.removeAttribute('inert');
 
     removeElement(modalContainer);
   };

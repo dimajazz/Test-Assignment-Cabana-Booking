@@ -2,11 +2,45 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { notify } from '@ui/notification/notify';
 import { getNotificationContainer } from '@ui/notification/getNotificationContainer';
+import { removeElement } from '@ui/dom/removeElement';
+
+vi.mock('@ui/notification/notification.module.css', () => ({
+  default: {
+    notification: 'notification',
+    notificationError: 'notification-error'
+  }
+}));
+
+vi.mock('@ui/dom/removeElement', () => ({
+  removeElement: vi.fn((el: HTMLElement) => {
+    el.remove();
+  })
+}));
+
+vi.mock('@ui/button/createButton', () => ({
+  createButton: vi.fn(({ content, ariaLabel, title, className }) => {
+    const btn = document.createElement('button');
+    btn.innerHTML = content;
+    btn.setAttribute('aria-label', ariaLabel);
+    btn.title = title;
+    btn.className = className;
+    return btn;
+  })
+}));
+
+vi.mock('@ui/notification/notification.module.css', () => ({
+  default: {
+    notification: 'notification',
+    notificationError: 'notification-error',
+    notificationContainer: 'notification-container'
+  }
+}));
 
 describe('notify with container', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
     vi.useFakeTimers();
+    vi.clearAllMocks();
   });
 
   it('appends notification into the container, not directly to body', () => {
@@ -51,6 +85,7 @@ describe('notify with container', () => {
     vi.advanceTimersByTime(3000);
 
     expect(container.contains(el)).toBe(false);
+    expect(removeElement).toHaveBeenCalledWith(el);
   });
 
   it('manual close still removes element from container', () => {
@@ -61,6 +96,7 @@ describe('notify with container', () => {
     btn.click();
 
     expect(container.contains(el)).toBe(false);
+    expect(removeElement).toHaveBeenCalledWith(el);
   });
 
   it('close button contains the correct symbol', () => {
@@ -68,6 +104,16 @@ describe('notify with container', () => {
     const btn = el.querySelector('button');
 
     expect(btn).not.toBeNull();
-    expect(btn?.textContent).toBe('×');
+    expect(btn?.innerHTML).toBe('×');
+  });
+
+  it('sets correct accessibility role for normal notification', () => {
+    const el = notify('hello', false);
+    expect(el.getAttribute('role')).toBe('status');
+  });
+
+  it('sets correct accessibility role for error notification', () => {
+    const el = notify('oops', true);
+    expect(el.getAttribute('role')).toBe('alert');
   });
 });

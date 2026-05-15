@@ -2,12 +2,13 @@
   "name": "backend",
   "version": "0.1.0",
   "description": "cabana-booking-backend",
-  "main": "index.ts",
-  "type": "module",
+  "type": "commonjs",
+  "private": true,
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "start": "ts-node src/index.ts"
   },
   "keywords": [],
   "author": "dimajazz",

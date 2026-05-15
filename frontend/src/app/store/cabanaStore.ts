@@ -1,7 +1,6 @@
 import { createCoordId } from "@features/map/createCoordId";
 import { getClone } from "@utils/getClone.utils";
 import type { Cabana, CabanaId, CabanaListener, CabanaMapEvent, CabanasMap } from "@models/map.types";
-import { Reservation } from "@models/reservation.types";
 
 let cabanasMap: CabanasMap = new Map();
 let listeners: CabanaListener[] = [];
@@ -28,8 +27,8 @@ export const cabanaStore = {
     return getClone(cabana);
   },
 
-  updateCabana(reservation: Reservation): void {
-    const { x, y } = reservation.cabana;
+  updateCabana(reservation: Cabana): void {
+    const { x, y } = reservation;
     const cabanaId = createCoordId('cabana', x, y);
 
     const cabana = cabanasMap.get(cabanaId);
@@ -38,13 +37,13 @@ export const cabanaStore = {
       return;
     }
 
-    const updateCabana: Cabana = {
+    const updatedCabana: Cabana = {
       ...cabana,
       isReserved: true,
-      guestName: reservation.guest.guestName
+      guestName: reservation.guestName
     };
 
-    cabanasMap.set(cabanaId, updateCabana);
+    cabanasMap.set(cabanaId, updatedCabana);
 
     const event: CabanaMapEvent = {
       type: 'cabanaUpdated',

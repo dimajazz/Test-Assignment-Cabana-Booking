@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import { createBookingForm } from "@ui/form/createBookingForm";
-import { BookingFormSubmitHandler, BookingFormSubmitPayload } from "@models/reservation.types";
+import { BookingFormSubmitPayload } from "@models/reservation.types";
+
+vi.mock('@ui/form/form.module.css', () => ({
+  default: {
+    bookingForm: 'bookingForm',
+    bookingFormButton: 'bookingFormButton'
+  }
+}));
 
 describe('createBookingForm()', () => {
   beforeEach(() => {
@@ -19,7 +26,7 @@ describe('createBookingForm()', () => {
     it('returned form element contains class "booking-form"', () => {
       const form = createBookingForm();
 
-      expect(form.element.classList.contains('booking-form')).toBe(true);
+      expect(form.element.classList.contains('bookingForm')).toBe(true);
     });
 
     it('renders title, inputs, labels and button', () => {

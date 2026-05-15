@@ -18,12 +18,15 @@ export class ReservationService {
       throw new PayloadValidationAppError('Invalid payload structure');
     }
 
-    if (guest.guestName !== store.bookings.get(guest.room)?.guestName) {
+    const guestName = guest.guestName.toLowerCase();
+    const storedGuestName = store.bookings.get(guest.room)?.guestName.toLowerCase();
+
+    if (guestName !== storedGuestName) {
       throw new ReservationAppError('Invalid booking credentials!');
     }
 
     if (store.isRoomAlreadyReserved(guest.room)) {
-      throw new ReservationAppError('The room had already been reserved by the guest');
+      throw new ReservationAppError('A cabana had already been reserved by the guest');
     }
 
     const cabanaId: CabanaId = `cabana-${cabana.x}:${cabana.y}`;
