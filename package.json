@@ -1,8 +1,9 @@
 {
   "name": "resort-map",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Resort Map - Cabana-Booking",
   "author": "dimajazz",
+  "license": "CC-BY-NC-ND-4.0",
   "private": true,
   "workspaces": [
     "backend",
