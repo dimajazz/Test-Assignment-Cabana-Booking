@@ -10,7 +10,7 @@ import type {
   Cabana,
   RoadTile,
   Tile
-} from 'models/map.types';
+} from '@models/map.types';
 
 vi.mock('@ui/mapTile/createMapTile', () => ({
   createMapTile: vi.fn()
